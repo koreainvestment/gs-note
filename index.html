@@ -1,48 +1,98 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GS Note - 정적 웹페이지</title>
+    <title>G-Note 리포트 뷰어</title>
     <style>
-        body {
-            font-family: 'Segoe UI', 'Malgun Gothic', Arial, sans-serif;
-            background: #f9fafb;
-            color: #222;
-            margin: 0;
-            padding: 0;
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f7f7f7; margin: 0; }
+        .container { display: flex; height: 100vh; }
+        .sidebar { width: 260px; background: #fff; border-right: 1px solid #e0e0e0; padding: 0; overflow-y: auto; transition: left 0.3s; }
+        .sidebar h2 { font-size: 1.2em; color: #005a9e; margin: 20px 0 10px 20px; }
+        .file-list { list-style: none; padding: 0; margin: 0; }
+        .file-list li { padding: 14px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
+        .file-list li.selected, .file-list li:hover { background: #eef7ff; color: #005a9e; font-weight: bold; }
+        .main { flex: 1; display: flex; flex-direction: column; }
+        .iframe-wrap { flex: 1; overflow: auto; }
+        iframe { width: 100%; height: 100%; border: none; background: #fff; }
+        .history-toggle { display: none; position: absolute; top: 16px; left: 16px; z-index: 1001; background: #005a9e; color: #fff; border: none; border-radius: 4px; padding: 10px 18px; font-size: 1.1em; cursor: pointer; }
+        @media (max-width: 900px) {
+            .container { flex-direction: column; }
+            .sidebar {
+                position: fixed;
+                left: -300px;
+                top: 0; bottom: 0;
+                height: 100vh;
+                z-index: 1000;
+                box-shadow: 2px 0 12px rgba(0,0,0,0.08);
+                transition: left 0.3s;
+            }
+            .sidebar.open { left: 0; }
+            .main { width: 100vw; }
+            .history-toggle { display: block; }
         }
-        header {
-            background: #1a237e;
-            color: #fff;
-            padding: 2rem 1rem 1rem 1rem;
-            text-align: center;
+        .sidebar-backdrop {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.2);
+            z-index: 999;
         }
-        main {
-            max-width: 700px;
-            margin: 2rem auto;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(60,60,100,0.08);
-            padding: 2rem;
-        }
-        h1 {
-            margin: 0 0 0.5em 0;
-        }
-        p {
-            line-height: 1.7;
-        }
+        .sidebar.open + .sidebar-backdrop { display: block; }
     </style>
 </head>
 <body>
-    <header>
-        <h1>GS Note</h1>
-        <p>골드만삭스 리포트 요약 프로젝트</p>
-    </header>
-    <main>
-        <h2>환영합니다!</h2>
-        <p>이 페이지는 정적 웹사이트의 예시입니다.<br>
-        필요한 내용이나 디자인을 자유롭게 수정할 수 있습니다.</p>
-    </main>
+    <button class="history-toggle" id="historyToggle">≡ 히스토리</button>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <h2>리포트 히스토리</h2>
+            <ul class="file-list" id="fileList">
+<li data-fname="history/gs-note_20250704.html">2025-07-04</li>
+<li data-fname="history/gs-note_20250703.html">2025-07-03</li>
+
+            </ul>
+        </div>
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+        <div class="main">
+            <div class="iframe-wrap">
+                <iframe id="reportFrame" src="history/gs-note_20250704.html"></iframe>
+            </div>
+        </div>
+    </div>
+    <script>
+    const fileList = document.getElementById('fileList');
+    const reportFrame = document.getElementById('reportFrame');
+    const sidebar = document.getElementById('sidebar');
+    const historyToggle = document.getElementById('historyToggle');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    function setSelected(li) {
+        Array.from(fileList.children).forEach(e => e.classList.remove('selected'));
+        li.classList.add('selected');
+    }
+    fileList.addEventListener('click', function(e) {
+        if(e.target.tagName === 'LI') {
+            const fname = e.target.getAttribute('data-fname');
+            reportFrame.src = fname;
+            setSelected(e.target);
+            if(window.innerWidth <= 900) {
+                sidebar.classList.remove('open');
+                sidebarBackdrop.style.display = 'none';
+            }
+        }
+    });
+    // 최초 로드시 첫번째 항목 선택
+    if(fileList.children.length > 0) {
+        setSelected(fileList.children[0]);
+    }
+    // 반응형: 히스토리 토글 버튼
+    historyToggle.addEventListener('click', function() {
+        sidebar.classList.add('open');
+        sidebarBackdrop.style.display = 'block';
+    });
+    sidebarBackdrop.addEventListener('click', function() {
+        sidebar.classList.remove('open');
+        sidebarBackdrop.style.display = 'none';
+    });
+    </script>
 </body>
 </html>
